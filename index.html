@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Starship Observer — SpaceX Infrastructure Tracker</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#101820;--panel:#17232e;--ink:#eef4f7;--muted:#a9bac5;--line:#344653}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:18px 20px 12px;background:#111d27;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(21px,4vw,30px);margin:0 0 5px}header p{margin:0;color:var(--muted);max-width:950px}
+main{display:grid;grid-template-columns:310px 1fr;min-height:75vh}
+aside{padding:15px;background:var(--panel);border-right:1px solid var(--line);overflow:auto;max-height:78vh}
+#map{height:78vh;min-height:520px;background:#dbe4e8}
+.filters{display:grid;gap:8px;margin:12px 0 18px}
+label{display:flex;align-items:center;gap:9px;color:var(--ink);font-size:14px}
+input{accent-color:#52b7d8}
+.legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
+h2{font-size:16px;margin:16px 0 7px}.note{font-size:12px;color:var(--muted)}
+#places{display:grid;gap:7px}.place{border:1px solid var(--line);border-radius:9px;padding:9px;background:#1c2b37}
+.place button{background:none;border:0;color:var(--ink);font:inherit;text-align:left;padding:0;cursor:pointer;width:100%;font-weight:650}
+.place small{display:block;color:var(--muted);margin-top:3px}
+footer{padding:16px 20px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+a{color:#72c9ed}.leaflet-popup-content{min-width:210px}.status{font-weight:700}
+@media(max-width:760px){main{display:flex;flex-direction:column}#map{height:60vh;min-height:430px;order:1}aside{order:2;max-height:none;border-right:0;border-top:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header>
+<h1>🚀 STARSHIP OBSERVER</h1>
+<p><strong>SpaceX Infrastructure Tracker</strong> · Незалежна інтерактивна карта інфраструктури SpaceX</p>
+<p>Виробництво Starship, вежі та стартові комплекси, Raptor, Starlink і майбутні майданчики. Натисніть на маркер або назву в списку, щоб побачити опис і джерела.</p>
+</header>
+<main>
+<aside>
+<strong>Фільтри об'єктів</strong>
+<div class="filters" id="filters"></div>
+<h2>Об'єкти на карті</h2>
+<div id="places"></div>
+<p class="note">Статуси позначають загальний тип/стадію проєкту, а не гарантію готовності до запуску. Точні межі деяких великих комплексів не показані.</p>
+</aside>
+<div id="map" role="application" aria-label="Карта інфраструктури SpaceX"></div>
+</main>
+<footer>
+<strong>Примітка щодо точності:</strong> це попередня редакція незалежної довідкової карти Starship Observer, не офіційна карта SpaceX. Частину статусів і точок ще потрібно додатково перевірити перед фінальною публікацією. Точки показують приблизне розташування комплексів; статуси та плани можуть змінюватися. Перевіряйте першоджерела перед публікацією.<br><br>
+<strong>Базові джерела:</strong>
+<a href="https://www.spacex.com/" target="_blank" rel="noopener">SpaceX</a> ·
+<a href="https://www.faa.gov/space/stakeholder_engagement/spacex_starship" target="_blank" rel="noopener">FAA Starship</a> ·
+<a href="https://www.faa.gov/space" target="_blank" rel="noopener">FAA Commercial Space</a> ·
+<a href="https://www.nasa.gov/" target="_blank" rel="noopener">NASA</a> ·
+<a href="https://www.opportunitylouisiana.gov/" target="_blank" rel="noopener">Louisiana Economic Development</a>.
+Карта використовує Leaflet та OpenStreetMap; для завантаження мапи потрібен інтернет.
+</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const categories={
+ factory:{name:"Виробництво / складання",color:"#e6a23c"},
+ launch:{name:"Стартові майданчики / вежі",color:"#e45b5b"},
+ test:{name:"Випробування / Raptor",color:"#a879e8"},
+ starlink:{name:"Starlink",color:"#36b8a0"},
+ corporate:{name:"Штаб-квартира / інженерія",color:"#5a9be8"},
+ future:{name:"Майбутні / запропоновані об'єкти",color:"#9aa8b3"}
+};
+const data=[
+{id:"starbase-factory",name:"Starfactory — Starbase",cat:"factory",status:"Працює / розвивається",lat:25.9975,lon:-97.1565,desc:"Основний виробничий комплекс Starship у Starbase, Техас. Тут виготовляють і інтегрують елементи кораблів та бустерів.",links:[["SpaceX","https://www.spacex.com/"],["FAA — Starship, Texas","https://www.faa.gov/space/stakeholder_engagement/spacex_starship"]]},
+{id:"megabay",name:"Mega Bay — Starbase",cat:"factory",status:"Експлуатується",lat:25.9961,lon:-97.1553,desc:"Високі монтажні корпуси для складання та інтеграції Starship і Super Heavy. На території Starbase є кілька поколінь складальних споруд.",links:[["SpaceX","https://www.spacex.com/"],["FAA — Starship, Texas","https://www.faa.gov/space/stakeholder_engagement/spacex_starship"]]},
+{id:"gigabay-tx",name:"Gigabay — Starbase",cat:"factory",status:"Будівництво / розширення",lat:25.9946,lon:-97.1530,desc:"Великий комплекс для масштабування виробництва та інтеграції Starship. Не плутати з уже діючими Mega Bay.",links:[["FAA — Starship, Texas","https://www.faa.gov/space/stakeholder_engagement/spacex_starship"]]},
+{id:"pad1",name:"Orbital Launch Pad 1 / Tower 1",cat:"launch",status:"Діючий майданчик",lat:25.9970,lon:-97.1578,desc:"Перший орбітальний стартовий майданчик Starbase з вежею та системою захоплення Mechazilla.",links:[["FAA — Starship, Texas","https://www.faa.gov/space/stakeholder_engagement/spacex_starship"]]},
+{id:"pad2",name:"Orbital Launch Pad 2 / Tower 2",cat:"launch",status:"Другий майданчик Starbase",lat:25.9940,lon:-97.1550,desc:"Другий орбітальний майданчик Starbase з окремою вежею. Стан готовності та експлуатаційні дозволи треба звіряти з останніми повідомленнями FAA.",links:[["FAA — Starship, Texas","https://www.faa.gov/space/stakeholder_engagement/spacex_starship"]]},
+{id:"masseys",name:"Massey's Test Site — Starbase",cat:"test",status:"Випробувальний об'єкт",lat:25.9890,lon:-97.1830,desc:"Випробувальна зона SpaceX поблизу Starbase, пов'язана з тестами компонентів і прототипів Starship.",links:[["FAA — Starship, Texas","https://www.faa.gov/space/stakeholder_engagement/spacex_starship"]]},
+{id:"mcgregor",name:"McGregor Rocket Development Facility",cat:"test",status:"Працює",lat:31.4300,lon:-97.4200,desc:"Ракетний випробувальний комплекс SpaceX у Техасі. Тут проводять випробування двигунів, зокрема Raptor та інших силових систем.",links:[["SpaceX","https://www.spacex.com/"]]},
+{id:"hawthorne",name:"SpaceX Headquarters — Hawthorne",cat:"corporate",status:"Працює",lat:33.9207,lon:-118.3278,desc:"Штаб-квартира SpaceX у Каліфорнії, інженерні, корпоративні та виробничі функції. Не слід трактувати як єдине місце виготовлення всіх Raptor.",links:[["SpaceX","https://www.spacex.com/"]]},
+{id:"bastrop",name:"Starlink — Bastrop, Texas",cat:"starlink",status:"Виробництво / операції",lat:30.1100,lon:-97.3150,desc:"Комплекс SpaceX у Bastrop, пов'язаний із виробництвом обладнання Starlink та іншими операціями компанії.",links:[["SpaceX","https://www.spacex.com/"]]},
+{id:"redmond",name:"SpaceX — Redmond, Washington",cat:"starlink",status:"Супутникові операції / інженерія",lat:47.6740,lon:-122.1215,desc:"Об'єкти SpaceX у районі Redmond пов'язані з розробкою та виробництвом супутникових систем Starlink.",links:[["SpaceX","https://www.spacex.com/"]]},
+{id:"roberts-road",name:"Roberts Road — Florida facilities",cat:"factory",status:"Розвиток виробничої інфраструктури",lat:28.5800,lon:-80.6500,desc:"Територія SpaceX на Roberts Road поблизу Kennedy Space Center, де розвивається інфраструктура для Starship, включно з великими виробничими/інтеграційними спорудами.",links:[["NASA KSC","https://www.nasa.gov/centers-and-facilities/kennedy/"],["FAA","https://www.faa.gov/space"]]},
+{id:"lc39a",name:"Kennedy Space Center — LC-39A",cat:"launch",status:"Існуючий Falcon 9 майданчик; Starship — розвиток/погодження",lat:28.6083,lon:-80.6041,desc:"Історичний стартовий комплекс LC-39A, який SpaceX використовує для Falcon 9 і Falcon Heavy. Інфраструктура Starship на цій ділянці пов'язана з окремими планами та регуляторними процедурами.",links:[["NASA — LC-39A","https://www.nasa.gov/centers-and-facilities/kennedy/"],["FAA","https://www.faa.gov/space"]]},
+{id:"slc37",name:"Cape Canaveral — SLC-37",cat:"future",status:"Запропонований / екологічний розгляд",lat:28.5310,lon:-80.5660,desc:"Майбутній комплекс Starship на території Cape Canaveral Space Force Station. Проєкт передбачає нову стартову інфраструктуру; не позначений як діючий Starship pad.",links:[["FAA — Environmental Reviews","https://www.faa.gov/space/environmental"]]},
+{id:"lc49",name:"Kennedy Space Center — LC-49",cat:"future",status:"Концепція / планування",lat:28.7300,lon:-80.6500,desc:"Потенційний майбутній майданчик у північній частині Kennedy Space Center, який згадувався в планах довгострокового розвитку. Не діючий майданчик Starship.",links:[["NASA KSC","https://www.nasa.gov/centers-and-facilities/kennedy/"]]},
+{id:"vandenberg",name:"Vandenberg SFB — SLC-4E",cat:"launch",status:"Діючий Falcon 9 майданчик; не Starship",lat:34.6320,lon:-120.6110,desc:"Стартовий комплекс SpaceX для Falcon 9 у Каліфорнії. Доданий для повної картини запускової мережі SpaceX; це не Starship tower.",links:[["SpaceX","https://www.spacex.com/"]]},
+{id:"ccsfs-slc40",name:"Cape Canaveral — SLC-40",cat:"launch",status:"Діючий Falcon 9 майданчик; не Starship",lat:28.5619,lon:-80.5774,desc:"Стартовий комплекс SpaceX для Falcon 9. Доданий як частина загальної запускової інфраструктури компанії.",links:[["SpaceX","https://www.spacex.com/"]]},
+{id:"louisiana",name:"Pecan Island — Louisiana proposal",cat:"future",status:"Оголошений / планований проєкт",lat:29.6500,lon:-92.1500,desc:"Запропонований проєкт запускової інфраструктури SpaceX у Vermilion Parish, Louisiana. Це окремий майбутній майданчик, а не чинна Starfactory. Точне розташування та етап реалізації слід перевіряти за документами штату й FAA.",links:[["Louisiana Economic Development","https://www.opportunitylouisiana.gov/"],["FAA — Environmental Reviews","https://www.faa.gov/space/environmental"]]}
+];
+const map=L.map('map').setView([31,-99],4);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+const layers={}; const markers={};
+Object.keys(categories).forEach(k=>{layers[k]=L.layerGroup().addTo(map)});
+function popup(d){return `<b>${d.name}</b><br><span class="status">${d.status}</span><p>${d.desc}</p>${d.links.map(x=>`<a href="${x[1]}" target="_blank" rel="noopener">${x[0]}</a>`).join(' · ')}`}
+data.forEach(d=>{
+ const c=categories[d.cat].color;
+ const m=L.circleMarker([d.lat,d.lon],{radius:8,color:"#fff",weight:1.5,fillColor:c,fillOpacity:.95});
+ m.bindPopup(popup(d));m.addTo(layers[d.cat]);markers[d.id]=m;
+});
+const filters=document.getElementById('filters');
+Object.entries(categories).forEach(([k,v])=>{
+ const l=document.createElement('label');l.innerHTML=`<input type="checkbox" checked data-cat="${k}"><span class="legend-dot" style="background:${v.color}"></span>${v.name}`;
+ filters.appendChild(l);
+});
+filters.addEventListener('change',e=>{if(e.target.dataset.cat){const k=e.target.dataset.cat;if(e.target.checked)map.addLayer(layers[k]);else map.removeLayer(layers[k]);}});
+const places=document.getElementById('places');
+data.forEach(d=>{
+ const el=document.createElement('div');el.className='place';
+ el.innerHTML=`<button type="button">${d.name}</button><small>${categories[d.cat].name} · ${d.status}</small>`;
+ el.querySelector('button').addEventListener('click',()=>{map.setView([d.lat,d.lon],Math.max(map.getZoom(),8));markers[d.id].openPopup();});
+ places.appendChild(el);
+});
+</script>
+</body></html>
