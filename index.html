@@ -10,6 +10,16 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
 header{padding:18px 20px 12px;background:#111d27;border-bottom:1px solid var(--line)}
 h1{font-size:clamp(21px,4vw,30px);margin:0 0 5px}header p{margin:0;color:var(--muted);max-width:950px}
+.header-links{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.header-links a{display:inline-block;padding:8px 12px;border:1px solid #3b7188;border-radius:8px;text-decoration:none;color:#eaf7fc;font-weight:650}
+.header-links a.primary{background:#1686b0;border-color:#1686b0}
+.soon-button{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border:1px dashed #71818d;border-radius:8px;color:#d5e0e6;font-weight:650;opacity:.88;cursor:default}.soon-button small{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9fb0ba;background:#2b3b47;padding:3px 6px;border-radius:5px}
+.channel-wrap{display:inline-flex;align-items:center;gap:7px;position:relative}
+.info-tip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;flex:0 0 21px;border:1px solid #72c9ed;border-radius:50%;color:#72c9ed;font-size:12px;font-weight:800;cursor:help}
+.info-tip .tiptext{visibility:hidden;opacity:0;position:absolute;z-index:1000;top:calc(100% + 9px);left:50%;transform:translateX(-50%);width:260px;max-width:calc(100vw - 40px);padding:10px 12px;border:1px solid #3b7188;border-radius:9px;background:#1c2b37;color:#eef4f7;font-size:13px;font-weight:400;line-height:1.45;box-shadow:0 5px 18px #0008;transition:opacity .15s;pointer-events:none;white-space:normal}
+.info-tip:hover .tiptext,.info-tip:focus .tiptext,.info-tip:focus-within .tiptext{visibility:visible;opacity:1}
+.header-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.header-links a{display:inline-block;padding:7px 12px;border:1px solid #3b7188;border-radius:8px;text-decoration:none;color:#eaf7fc;font-weight:650}.header-links a.primary{background:#1686b0;border-color:#1686b0}
+.soon-button{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border:1px dashed #71818d;border-radius:8px;color:#d5e0e6;font-weight:650;opacity:.88;cursor:default}.soon-button small{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9fb0ba;background:#2b3b47;padding:3px 6px;border-radius:5px}
 main{display:grid;grid-template-columns:310px 1fr;min-height:75vh}
 aside{padding:15px;background:var(--panel);border-right:1px solid var(--line);overflow:auto;max-height:78vh}
 #map{height:78vh;min-height:520px;background:#dbe4e8}
@@ -18,7 +28,7 @@ label{display:flex;align-items:center;gap:9px;color:var(--ink);font-size:14px}
 input{accent-color:#52b7d8}
 .legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
 h2{font-size:16px;margin:16px 0 7px}.note{font-size:12px;color:var(--muted)}
-#places{display:grid;gap:7px}.place{border:1px solid var(--line);border-radius:9px;padding:9px;background:#1c2b37}
+#places{display:grid;gap:7px}.place{border:1px solid var(--line);border-radius:9px;padding:9px;background:#1c2b37;transition:border-color .15s,background .15s}.place.selected{border-color:#55c8f0;background:#263d4d;box-shadow:0 0 0 1px #55c8f055}
 .place button{background:none;border:0;color:var(--ink);font:inherit;text-align:left;padding:0;cursor:pointer;width:100%;font-weight:650}
 .place small{display:block;color:var(--muted);margin-top:3px}
 footer{padding:16px 20px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
@@ -30,7 +40,8 @@ a{color:#72c9ed}.leaflet-popup-content{min-width:210px}.status{font-weight:700}
 <header>
 <h1>🚀 STARSHIP OBSERVER</h1>
 <p><strong>SpaceX Infrastructure Tracker</strong> · Незалежна інтерактивна карта інфраструктури SpaceX</p>
-<p>Виробництво Starship, вежі та стартові комплекси, Raptor, Starlink і майбутні майданчики. Натисніть на маркер або назву в списку, щоб побачити опис і джерела.</p>
+<p>Виробництво Starship, вежі та стартові комплекси, Raptor, Starlink і майбутні майданчики. Натисніть на маркер або назву в списку, щоб наблизити об’єкт, побачити опис і джерела.</p>
+<nav class="header-links" aria-label="Основна навігація"><a class="primary" href="index.html">🗺️ Інтерактивна карта</a><a href="films.html">🎬 Бібліотека фільмів</a><a href="https://t.me/starshipobserver" target="_blank" rel="noopener">✈ Telegram-канал ↗</a><a href="https://t.me/+gnMyMC8DszwyMGQy" target="_blank" rel="noopener">💬 Feedback</a><span class="soon-button" aria-label="Підтримка проєкту стане доступною незабаром">❤️ Підтримати проєкт <small>незабаром</small></span></nav>
 </header>
 <main>
 <aside>
@@ -44,6 +55,7 @@ a{color:#72c9ed}.leaflet-popup-content{min-width:210px}.status{font-weight:700}
 </main>
 <footer>
 <strong>Примітка щодо точності:</strong> це попередня редакція незалежної довідкової карти Starship Observer, не офіційна карта SpaceX. Частину статусів і точок ще потрібно додатково перевірити перед фінальною публікацією. Точки показують приблизне розташування комплексів; статуси та плани можуть змінюватися. Перевіряйте першоджерела перед публікацією.<br><br>
+<section id="feedback" style="margin:0 0 14px"><strong>Знайшли помилку або маєте пропозицію?</strong><br>Допоможіть зробити карту точнішою: приєднуйтеся до спільноти Starship Observer Feedback та напишіть, який об’єкт потрібно виправити або додати. Якщо можливо, додайте посилання на джерело.<br><a href="https://t.me/+gnMyMC8DszwyMGQy" target="_blank" rel="noopener">💬 Перейти до групи Feedback</a> · <a href="https://t.me/starshipobserver" target="_blank" rel="noopener">Головний канал</a></section>
 <strong>Базові джерела:</strong>
 <a href="https://www.spacex.com/" target="_blank" rel="noopener">SpaceX</a> ·
 <a href="https://www.faa.gov/space/stakeholder_engagement/spacex_starship" target="_blank" rel="noopener">FAA Starship</a> ·
@@ -82,14 +94,28 @@ const data=[
 {id:"louisiana",name:"Pecan Island — Louisiana proposal",cat:"future",status:"Оголошений / планований проєкт",lat:29.6500,lon:-92.1500,desc:"Запропонований проєкт запускової інфраструктури SpaceX у Vermilion Parish, Louisiana. Це окремий майбутній майданчик, а не чинна Starfactory. Точне розташування та етап реалізації слід перевіряти за документами штату й FAA.",links:[["Louisiana Economic Development","https://www.opportunitylouisiana.gov/"],["FAA — Environmental Reviews","https://www.faa.gov/space/environmental"]]}
 ];
 const map=L.map('map').setView([31,-99],4);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+window.addEventListener('load',()=>setTimeout(()=>map.invalidateSize(),250));
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri — Sources: Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community'}).addTo(map);
 const layers={}; const markers={};
 Object.keys(categories).forEach(k=>{layers[k]=L.layerGroup().addTo(map)});
 function popup(d){return `<b>${d.name}</b><br><span class="status">${d.status}</span><p>${d.desc}</p>${d.links.map(x=>`<a href="${x[1]}" target="_blank" rel="noopener">${x[0]}</a>`).join(' · ')}`}
+const placeElements={};
+function focusPlace(d, open=true){
+ const targetZoom = 17;
+ map.flyTo([d.lat,d.lon], targetZoom, {duration:0.8});
+ document.querySelectorAll('.place').forEach(el=>el.classList.remove('selected'));
+ if(placeElements[d.id]){
+   placeElements[d.id].classList.add('selected');
+   placeElements[d.id].scrollIntoView({block:'nearest',behavior:'smooth'});
+ }
+ if(open) setTimeout(()=>markers[d.id].openPopup(),850);
+}
 data.forEach(d=>{
  const c=categories[d.cat].color;
  const m=L.circleMarker([d.lat,d.lon],{radius:8,color:"#fff",weight:1.5,fillColor:c,fillOpacity:.95});
- m.bindPopup(popup(d));m.addTo(layers[d.cat]);markers[d.id]=m;
+ m.bindPopup(popup(d));
+ m.on('click',()=>focusPlace(d,false));
+ m.addTo(layers[d.cat]);markers[d.id]=m;
 });
 const filters=document.getElementById('filters');
 Object.entries(categories).forEach(([k,v])=>{
@@ -101,8 +127,9 @@ const places=document.getElementById('places');
 data.forEach(d=>{
  const el=document.createElement('div');el.className='place';
  el.innerHTML=`<button type="button">${d.name}</button><small>${categories[d.cat].name} · ${d.status}</small>`;
- el.querySelector('button').addEventListener('click',()=>{map.setView([d.lat,d.lon],Math.max(map.getZoom(),8));markers[d.id].openPopup();});
+ el.querySelector('button').addEventListener('click',()=>focusPlace(d,true));
  places.appendChild(el);
+ placeElements[d.id]=el;
 });
 </script>
 </body></html>
